@@ -21,16 +21,30 @@ export const createCVPdf = async (id, user) => {
 
   const profilePic = await convertToURI(user.image);
 
-    // const newImageObject = await user.experiences.map(async (experience, i) => {
-    //   const expImageBase64 = await imageToBase64(experience.image);
-    //   const expImage = "data:image/jpeg;base64," + expImageBase64;
-    //   const imgObjectPropertyPhrase = "expPic" + i.toString();
-    //   imageObject[imgObjectPropertyPhrase] = expImage;
-    // });
-
-  //   declare separate content and populate with superficial User Info
+  // const newImageObject = await user.experiences.map(async (experience, i) => {
+  //   const expImageBase64 = await imageToBase64(experience.image);
+  //   const expImage = "data:image/jpeg;base64," + expImageBase64;
+  //   const imgObjectPropertyPhrase = "expPic" + i.toString();
+  //   imageObject[imgObjectPropertyPhrase] = expImage;
+  // });
 
   
+  const createPDFImagesObject = async (files) => {
+    const ImageObject = new Object()
+    let count = 0
+    for await (const file of files) {
+        const imageURI = await convertToURI(file.image);
+        ImageObject["expImg" + count.toString()]
+        count++;
+    }
+    return ImageObject;
+  };
+
+  const experiencesImgObject = await createPDFImagesObject(user.experiences)
+  console.log(experiencesImgObject)
+  
+
+  //   declare separate content and populate with superficial User Info
 
   // Add Experiences text + images to content
   const experiencesPDFArray = [];
@@ -39,7 +53,7 @@ export const createCVPdf = async (id, user) => {
     experiencesPDFArray.push({
       columns: [
         // {
-        //   image: "expPic" + i.toString(),
+        //   image: "expImg" + i.toString(),
         //   width: 100,
         //   alignment: "left",
         // },
@@ -49,7 +63,12 @@ export const createCVPdf = async (id, user) => {
           alignment: "center",
         },
         {
-          text: "\n" + user.experiences[i].role + "\n\n" + user.experiences[i].company,
+          text:
+            "\n\n" +
+            user.experiences[i].role +
+            "\n\n" +
+            user.experiences[i].company +
+            "\n\n",
           style: "subheader",
           alignment: "center",
         },
@@ -74,7 +93,7 @@ export const createCVPdf = async (id, user) => {
       ],
     },
     {
-      text: "\n" + user.title + "\n\n",
+      text: "\n\n" + user.title + "\n\n",
       style: "subheader",
       alignment: "center",
     },
@@ -94,7 +113,7 @@ export const createCVPdf = async (id, user) => {
     {
       text: "\n" + "Experiences:" + "\n\n",
     },
-    ...experiencesPDFArray
+    ...experiencesPDFArray,
   ];
 
   const styles = {
@@ -122,6 +141,7 @@ export const createCVPdf = async (id, user) => {
     styles: styles,
     images: {
       profilePicture: profilePic,
+    //   ...experiencesImgObject
     },
   };
 
