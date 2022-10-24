@@ -17,9 +17,20 @@ const cloudinaryUploader = multer({
   limits: { fileSize: 1024 * 1024 },
 }).single("profile");
 
+const experienceCloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "BEwk4BuildWeek/experiences",
+      public_id: (req, file) => req.params.experienceId,
+    },
+  }),
+  limits: { fileSize: 1024 * 1024 },
+}).single("experience");
+
 const usersRouter = express.Router();
 
-// USERS
+// =========================== USERS ===========================
 
 // POST USER
 
@@ -157,5 +168,213 @@ usersRouter.delete("/:userId", async (req, res, next) => {
     next(error);
   }
 });
+
+// =========================== EXPERIENCES ===========================
+
+// POST EXPERIENCE
+
+usersRouter.post("/:userId/experiences", async (req, res, next) => {
+  try {
+    const experienceData = {
+      ...req.body,
+      image:
+        "https://res.cloudinary.com/dlskdxln3/image/upload/v1666605332/BEwk4BuildWeek/user-icon_pwk4kh.jpg",
+    };
+
+    const updatedUser = await UsersModel.findByIdAndUpdate(
+      req.params.userId,
+      { $push: { experiences: experienceData } },
+      { new: true, runValidators: true }
+    );
+
+    if (updatedUser) {
+      res.status(200).send(updatedUser);
+    } else {
+      next(
+        createHttpError(404, `User with id ${req.params.userId} not found!`)
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST EXPERIENCE IMAGE
+
+usersRouter.post(
+  "/:userId/experiences/:experienceId/image",
+  experienceCloudinaryUploader,
+  async (req, res, next) => {
+    try {
+      const fileName = req.params.experienceId + extname(req.file.originalname);
+
+      const cloudinaryURL =
+        "https://res.cloudinary.com/dlskdxln3/image/upload/BEwk4BuildWeek/experiences/" +
+        fileName;
+
+      const user = await UsersModel.findById(req.params.userId);
+
+      if (user) {
+        const selectedExperienceIndex = user.experiences.findIndex(
+          (experience) => experience._id.toString() === req.params.experienceId
+        );
+
+        if (selectedExperienceIndex !== -1) {
+          user.experiences[selectedExperienceIndex] = {
+            ...user.experiences[selectedExperienceIndex],
+            image: cloudinaryURL,
+            _id: req.params.experienceId,
+          };
+
+          await user.save({ validateBeforeSave: false });
+
+          res.status(200).send(user);
+        } else {
+          next(
+            createHttpError(
+              404,
+              `Experience with id ${req.params.experienceId} not found!`
+            )
+          );
+        }
+      } else {
+        next(
+          createHttpError(404, `User with id ${req.params.userId} not found!`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// GET EXPERIENCES
+
+usersRouter.get("/:userId/experiences", async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.params.userId);
+
+    if (user) {
+      res.status(200).send(user.experiences);
+    } else {
+      next(
+        createHttpError(404, `User with id ${req.params.userId} not found!`)
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET SPECIFIC EXPERIENCE
+
+usersRouter.get(
+  "/:userId/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const user = await UsersModel.findById(req.params.userId);
+
+      if (user) {
+        const selectedExperience = user.experiences.find(
+          (experience) => experience._id.toString() === req.params.experienceId
+        );
+
+        if (selectedExperience) {
+          res.status(200).send(selectedExperience);
+        } else {
+          next(
+            createHttpError(
+              404,
+              `Experience with id ${req.params.experienceId} not found!`
+            )
+          );
+        }
+      } else {
+        next(
+          createHttpError(404, `User with id ${req.params.userId} not found!`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PUT EXPERIENCE
+
+usersRouter.put(
+  "/:userId/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const user = await UsersModel.findById(req.params.userId);
+
+      if (user) {
+        const selectedExperienceIndex = user.experiences.findIndex(
+          (experience) => experience._id.toString() === req.params.experienceId
+        );
+
+        if (selectedExperienceIndex !== -1) {
+          user.experiences[selectedExperienceIndex] = {
+            ...user.experiences[selectedExperienceIndex],
+            ...req.body,
+            _id: req.params.experienceId,
+          };
+
+          await user.save();
+
+          res.status(200).send(user);
+        } else {
+          next(
+            createHttpError(
+              404,
+              `Experience with id ${req.params.experienceId} not found!`
+            )
+          );
+        }
+      } else {
+        next(
+          createHttpError(404, `User with id ${req.params.userId} not found!`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// DELETE EXPERIENCE
+
+usersRouter.delete(
+  "/:userId/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const user = await UsersModel.findByIdAndUpdate(
+        req.params.userId,
+        { $pull: { experiences: { _id: req.params.experienceId } } },
+        { new: true }
+      );
+
+      if (user) {
+        res.send();
+      } else {
+        next(
+          createHttpError(404, `User with id ${req.params.userId} not found!`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// =========================== PDF AND CSV ===========================
+
+// PDF
+
+
+
+// CSV
+
+
 
 export default usersRouter;
