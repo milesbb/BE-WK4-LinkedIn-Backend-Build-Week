@@ -5,6 +5,8 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import { extname } from "path";
+import { createCVPdf } from "../../lib/pdf-tools.js";
+import { pipeline } from "stream";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -371,10 +373,23 @@ usersRouter.delete(
 
 // PDF
 
+usersRouter.get("/:userId/cv", async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.params.userId)
 
+    res.setHeader("Content-Disposition", `attachment; filename=CV.pdf`);
+
+    const source = await createCVPdf(req.params.userId, user);
+    const destination = res;
+
+    pipeline(source, destination, (error) => {
+      if (error) console.log(error);
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // CSV
-
-
 
 export default usersRouter;
