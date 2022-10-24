@@ -7,6 +7,11 @@ import multer from "multer";
 import { extname } from "path";
 import { createCVPdf } from "../../lib/pdf-tools.js";
 import { pipeline } from "stream";
+import { Transform } from "json2csv";
+import fs, { createReadStream } from "fs";
+import csv from "mongoose-csv-export";
+import streamify from "stream-array";
+import { Stream } from "stream";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -222,11 +227,7 @@ usersRouter.post(
         );
 
         if (selectedExperienceIndex !== -1) {
-          user.experiences[selectedExperienceIndex] = {
-            ...user.experiences[selectedExperienceIndex],
-            image: cloudinaryURL,
-            _id: req.params.experienceId,
-          };
+          user.experiences[selectedExperienceIndex].image = cloudinaryURL
 
           await user.save({ validateBeforeSave: false });
 
@@ -375,7 +376,7 @@ usersRouter.delete(
 
 usersRouter.get("/:userId/cv", async (req, res, next) => {
   try {
-    const user = await UsersModel.findById(req.params.userId)
+    const user = await UsersModel.findById(req.params.userId);
 
     res.setHeader("Content-Disposition", `attachment; filename=CV.pdf`);
 
@@ -391,5 +392,50 @@ usersRouter.get("/:userId/cv", async (req, res, next) => {
 });
 
 // CSV
+
+usersRouter.get("/:userId/csv", async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.params.userId);
+
+    const { experiences } = user;
+
+    // const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
+
+    // res.setHeader(
+    //   "Content-Disposition",
+    //   "attachment; filename=experiences.csv"
+    // );
+
+    // const jsonExperiences = await JSON.stringify(experiences);
+
+    // const opts = jsonExperiences;
+
+    // const source = createReadStream(jsonExperiences, { encoding: "utf8" });
+
+    // const transform = new Transform(opts, transformOpts);
+    // const destination = res;
+
+    // pipeline(source, transform, destination, (error) => {
+    //   if (error) console.log(error);
+    // });
+
+    // const readable = new Stream.Readable({ objectMode: true });
+
+    // const writable = new Stream.Writable({ objectMode: true });
+    // writable._write = (object, encoding, done) => {
+    //   console.log(object);
+
+    //   // ready to process the next chunk
+    //   done();
+    // };
+
+    // readable.pipe(writable);
+
+    // experiences.forEach((experience) => readable.push(experience));
+
+    // // end the stream
+    // readable.push(null);
+  } catch (error) {}
+});
 
 export default usersRouter;
