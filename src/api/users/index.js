@@ -5,14 +5,9 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import { extname } from "path";
-import { createCVPdf } from "../../lib/pdf-tools.js";
+import createCVPdf from "../../lib/pdf-tools.js";
 import { pipeline, Readable } from "stream";
 import { Transform } from "json2csv";
-import fs, { createReadStream } from "fs";
-import csv from "mongoose-csv-export";
-import streamify from "stream-array";
-import { Stream } from "stream";
-import ObjectsToCsv from "objects-to-csv";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -383,12 +378,7 @@ usersRouter.get("/:userId/cv", async (req, res, next) => {
 
     res.setHeader("Content-Disposition", `attachment; filename=CV.pdf`);
 
-    const source = await createCVPdf(req.params.userId, user);
-    const destination = res;
-
-    pipeline(source, destination, (error) => {
-      if (error) console.log(error);
-    });
+    await createCVPdf(req.params.userId, user, res);
   } catch (error) {
     next(error);
   }
@@ -402,39 +392,39 @@ usersRouter.get("/:userId/csv", async (req, res, next) => {
 
     const { experiences } = user;
 
-    // check if there are experiences, if not then send error, if so then do this code
+    if (experiences) {
+      const jsonExperiences = JSON.stringify(experiences);
 
-    const jsonExperiences = JSON.stringify(experiences);
+      const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
 
-    const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=experiences.csv"
+      );
 
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=experiences.csv"
-    );
+      const opts = { experiences };
 
-    const opts = { experiences };
+      const source = new Readable({
+        read(size) {
+          this.push(jsonExperiences);
+          this.push(null);
+        },
+      });
 
-    // const filePath = join(__dirname, "../../../test.csv");
+      const transform = new Transform(opts, transformOpts);
+      const destination = res;
 
-    // const csv = new ObjectsToCsv(experiences)
-    // await csv.toDisk("./test.csv")
-
-    const source = new Readable({
-      read(size) {
-        this.push(jsonExperiences);
-        this.push(null);
-      },
-    });
-
-    // const source = createReadStream(filePath, { encoding: "utf8" });
-
-    const transform = new Transform(opts, transformOpts);
-    const destination = res;
-
-    pipeline(source, transform, destination, (error) => {
-      if (error) console.log(error);
-    });
+      pipeline(source, transform, destination, (error) => {
+        if (error) console.log(error);
+      });
+    } else {
+      next(
+        createHttpError(
+          404,
+          `User with id ${req.params.userId} has not added any experiences!`
+        )
+      );
+    }
   } catch (error) {}
 });
 
