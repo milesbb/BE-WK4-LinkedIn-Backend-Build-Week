@@ -402,7 +402,9 @@ usersRouter.get("/:userId/csv", async (req, res, next) => {
 
     const { experiences } = user;
 
-    const jsonExperiences = await JSON.stringify(experiences);
+    // check if there are experiences, if not then send error, if so then do this code
+
+    const jsonExperiences = JSON.stringify(experiences);
 
     const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
 
@@ -413,12 +415,19 @@ usersRouter.get("/:userId/csv", async (req, res, next) => {
 
     const opts = { experiences };
 
-    const filePath = join(__dirname, "../../../test.csv");
+    // const filePath = join(__dirname, "../../../test.csv");
 
     // const csv = new ObjectsToCsv(experiences)
     // await csv.toDisk("./test.csv")
 
-    const source = createReadStream(filePath, { encoding: "utf8" });
+    const source = new Readable({
+      read(size) {
+        this.push(jsonExperiences);
+        this.push(null);
+      },
+    });
+
+    // const source = createReadStream(filePath, { encoding: "utf8" });
 
     const transform = new Transform(opts, transformOpts);
     const destination = res;
