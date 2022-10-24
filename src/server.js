@@ -8,6 +8,7 @@ import {
   notFoundHandler,
   unauthorizedHandler,
 } from "./errorHandlers.js";
+import postRouter from "./api/posts/index.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -20,6 +21,8 @@ server.use(
 );
 
 server.use(express.json());
+
+server.use("/posts",postRouter)
 
 // server.use("/", );
 
