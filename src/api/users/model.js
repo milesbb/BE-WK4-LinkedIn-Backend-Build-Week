@@ -11,6 +11,7 @@ const experienceSchema = new Schema(
     description: { type: String, required: true },
     area: { type: String, required: true },
     image: { type: String, required: true },
+    
   },
   {
     timestamps: true,

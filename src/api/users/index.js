@@ -6,12 +6,13 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import { extname } from "path";
 import { createCVPdf } from "../../lib/pdf-tools.js";
-import { pipeline } from "stream";
+import { pipeline, Readable } from "stream";
 import { Transform } from "json2csv";
 import fs, { createReadStream } from "fs";
 import csv from "mongoose-csv-export";
 import streamify from "stream-array";
 import { Stream } from "stream";
+import ObjectsToCsv from "objects-to-csv";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -23,6 +24,8 @@ const cloudinaryUploader = multer({
   }),
   limits: { fileSize: 1024 * 1024 },
 }).single("profile");
+
+// ****** NAZAMI ****** - WHEN DOING CLOUDINARY UPLOAD FOR POSTS, CHANGE 'folder' property to "BEwk4BuildWeek/posts" and change 'public_id' function contents to req.params.postId (or whatever you called the id path parameter)
 
 const experienceCloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -227,7 +230,7 @@ usersRouter.post(
         );
 
         if (selectedExperienceIndex !== -1) {
-          user.experiences[selectedExperienceIndex].image = cloudinaryURL
+          user.experiences[selectedExperienceIndex].image = cloudinaryURL;
 
           await user.save({ validateBeforeSave: false });
 
@@ -399,42 +402,30 @@ usersRouter.get("/:userId/csv", async (req, res, next) => {
 
     const { experiences } = user;
 
-    // const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
+    const jsonExperiences = await JSON.stringify(experiences);
 
-    // res.setHeader(
-    //   "Content-Disposition",
-    //   "attachment; filename=experiences.csv"
-    // );
+    const transformOpts = { highWaterMark: 16384, encoding: "utf-8" };
 
-    // const jsonExperiences = await JSON.stringify(experiences);
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=experiences.csv"
+    );
 
-    // const opts = jsonExperiences;
+    const opts = { experiences };
 
-    // const source = createReadStream(jsonExperiences, { encoding: "utf8" });
+    const filePath = join(__dirname, "../../../test.csv");
 
-    // const transform = new Transform(opts, transformOpts);
-    // const destination = res;
+    // const csv = new ObjectsToCsv(experiences)
+    // await csv.toDisk("./test.csv")
 
-    // pipeline(source, transform, destination, (error) => {
-    //   if (error) console.log(error);
-    // });
+    const source = createReadStream(filePath, { encoding: "utf8" });
 
-    // const readable = new Stream.Readable({ objectMode: true });
+    const transform = new Transform(opts, transformOpts);
+    const destination = res;
 
-    // const writable = new Stream.Writable({ objectMode: true });
-    // writable._write = (object, encoding, done) => {
-    //   console.log(object);
-
-    //   // ready to process the next chunk
-    //   done();
-    // };
-
-    // readable.pipe(writable);
-
-    // experiences.forEach((experience) => readable.push(experience));
-
-    // // end the stream
-    // readable.push(null);
+    pipeline(source, transform, destination, (error) => {
+      if (error) console.log(error);
+    });
   } catch (error) {}
 });
 
