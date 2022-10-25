@@ -6,6 +6,6 @@ Users, Posts, and Experiences support with PDF, CSV, and Cloudinary image upload
 
 [Frontend can be found here!](https://github.com/milesbb/React-LinkedIn-Recreation)
 
-[Deployed frontend](https://vercel.com/milesbb/react-linkedin)
+[Deployed frontend](https://react-linkedin.vercel.app/)
 
 [Deployed backend](https://graceful-overalls-jay.cyclic.app)
