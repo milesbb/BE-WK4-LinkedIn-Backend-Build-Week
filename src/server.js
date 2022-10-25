@@ -9,6 +9,7 @@ import {
   unauthorizedHandler,
 } from "./errorHandlers.js";
 import usersRouter from "./api/users/index.js";
+import postRouter from "./api/posts/index.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ server.use(
 server.use(express.json());
 
 server.use("/users", usersRouter);
+server.use("/posts",postRouter)
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
