@@ -1,9 +1,10 @@
 import express from "express";
 import createHttpError from "http-errors";
-import postModel from "./model.js";
+import PostModel from "./model.js";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
+import q2m from "query-to-mongo";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -22,7 +23,7 @@ const postRouter = express.Router();
 
 postRouter.post("/", async (req, res, next) => {
   try {
-    const newPost = new postModel(req.body);
+    const newPost = new PostModel(req.body);
 
     const { _id } = await newPost.save();
 
@@ -34,11 +35,13 @@ postRouter.post("/", async (req, res, next) => {
 
 // POST IMAGE TO POST
 
+
+
 // GET ALL POSTS
 
 postRouter.get("/", async (req, res, next) => {
   try {
-    const posts = await postModel.find().populate({
+    const posts = await PostModel.find().populate({
       path: "user",
       select: "name surname image",
     });
@@ -50,11 +53,36 @@ postRouter.get("/", async (req, res, next) => {
 
 // GET ALL POSTS PAGINATE
 
+postRouter.get("/paginate", async (req, res, next) => {
+  try {
+    const mQuery = q2m(req.query);
+
+    const totalPosts = await PostModel.countDocuments(mQuery.criteria);
+
+    const posts = await PostModel.find(mQuery.criteria, mQuery.options.fields)
+      .skip(mQuery.options.skip)
+      .limit(mQuery.options.limit)
+      .sort(mQuery.options.sort)
+      .populate({
+        path: "user",
+        select: "name surname image",
+      });
+    res.send({
+      links: mQuery.links("http://localhost:3001/posts", totalPosts),
+      totalPosts,
+      totalPages: Math.ceil(totalPosts / mQuery.options.limit),
+      posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET SPECIFIC POST
 
 postRouter.get("/:postId", async (req, res, next) => {
   try {
-    const post = await postModel.findById(req.params.postId).populate({
+    const post = await PostModel.findById(req.params.postId).populate({
       path: "user",
       select: "name surname image",
     });
@@ -77,7 +105,7 @@ postRouter.get("/:postId", async (req, res, next) => {
 
 postRouter.put("/:postId", async (req, res, next) => {
   try {
-    const updatedPost = await postModel.findByIdAndUpdate(
+    const updatedPost = await PostModel.findByIdAndUpdate(
       req.params.postId,
       req.body,
       {
@@ -104,7 +132,7 @@ postRouter.put("/:postId", async (req, res, next) => {
 
 postRouter.delete("/:postId", async (req, res, next) => {
   try {
-    const deletePost = await postModel.findByIdAndDelete(req.params.postId);
+    const deletePost = await PostModel.findByIdAndDelete(req.params.postId);
     if (deletePost) {
       res.status(204).send();
     } else {
