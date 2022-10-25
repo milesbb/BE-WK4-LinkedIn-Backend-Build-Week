@@ -72,7 +72,7 @@ postRouter.get("/", async (req, res, next) => {
   try {
     const posts = await PostModel.find().populate({
       path: "user",
-      select: "name surname image",
+      select: "name surname image title company",
     });
     res.send(posts);
   } catch (error) {
@@ -94,7 +94,7 @@ postRouter.get("/paginate", async (req, res, next) => {
       .sort(mQuery.options.sort)
       .populate({
         path: "user",
-        select: "name surname image",
+        select: "name surname image title company",
       });
     res.send({
       links: mQuery.links("http://localhost:3001/posts", totalPosts),
@@ -113,7 +113,7 @@ postRouter.get("/:postId", async (req, res, next) => {
   try {
     const post = await PostModel.findById(req.params.postId).populate({
       path: "user",
-      select: "name surname image",
+      select: "name surname image title company",
     });
     if (post) {
       res.send(post);
