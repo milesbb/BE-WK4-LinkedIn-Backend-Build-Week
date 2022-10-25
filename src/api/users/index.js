@@ -20,8 +20,6 @@ const cloudinaryUploader = multer({
   limits: { fileSize: 1024 * 1024 },
 }).single("profile");
 
-// ****** NAZAMI ****** - WHEN DOING CLOUDINARY UPLOAD FOR POSTS, CHANGE 'folder' property to "BEwk4BuildWeek/posts" and change 'public_id' function contents to req.params.postId (or whatever you called the id path parameter)
-
 const experienceCloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
