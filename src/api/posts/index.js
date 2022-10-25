@@ -5,6 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import q2m from "query-to-mongo";
+import { extname } from "path";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -35,7 +36,35 @@ postRouter.post("/", async (req, res, next) => {
 
 // POST IMAGE TO POST
 
+postRouter.post(
+  "/:postId/image",
+  cloudinaryUploader,
+  async (req, res, next) => {
+    try {
+      const fileName = req.params.postId + extname(req.file.originalname);
 
+      const cloudinaryURL =
+        "https://res.cloudinary.com/dlskdxln3/image/upload/BEwk4BuildWeek/posts/" +
+        fileName;
+
+      const updatedPost = await PostModel.findByIdAndUpdate(
+        req.params.postId,
+        { image: cloudinaryURL },
+        { new: true, runValidators: true }
+      );
+
+      if (updatedPost) {
+        res.send(updatedPost);
+      } else {
+        next(
+          createHttpError(404, `Post with id ${req.params.postId} not found`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // GET ALL POSTS
 
