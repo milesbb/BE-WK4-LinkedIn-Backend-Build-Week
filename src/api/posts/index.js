@@ -241,7 +241,7 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
       );
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 
@@ -249,18 +249,20 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
 
 postRouter.get("/:postId/likes", async (req, res, next) => {
   try {
-    const post = await PostModel.findById(req.params.postId)
+    const post = await PostModel.findById(req.params.postId);
 
     if (post) {
-      res.status(200).send(post.likes)
+      res.send({
+        postLikes: post.likes,
+      });
     } else {
       next(
         createHttpError(404, `post with id: ${req.params.postId} not found`)
       );
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 export default postRouter;
