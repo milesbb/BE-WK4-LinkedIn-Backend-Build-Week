@@ -10,6 +10,7 @@ import {
 } from "./errorHandlers.js";
 import usersRouter from "./api/users/index.js";
 import postRouter from "./api/posts/index.js";
+import skillsRouter from "./api/skills/index.js"
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -24,7 +25,8 @@ server.use(
 server.use(express.json());
 
 server.use("/users", usersRouter);
-server.use("/posts",postRouter)
+server.use("/posts", postRouter);
+server.use("/skills", skillsRouter);
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);

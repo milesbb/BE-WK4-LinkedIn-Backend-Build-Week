@@ -11,7 +11,6 @@ const experienceSchema = new Schema(
     description: { type: String, required: true },
     area: { type: String, required: true },
     image: { type: String, required: true },
-    
   },
   {
     timestamps: true,
@@ -29,7 +28,8 @@ const usersSchema = new Schema(
     image: { type: String, required: true },
     username: { type: String, required: true },
     experiences: [experienceSchema],
-    likedPosts: [{type: String, required: false}]
+    likedPosts: [{ type: String, required: false }],
+    skills: [{ type: Schema.Types.ObjectId, ref: "Skill" }]
   },
   {
     timestamps: true,
