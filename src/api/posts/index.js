@@ -240,7 +240,27 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
         createHttpError(404, `user with id: ${req.params.userId} not found`)
       );
     }
-  } catch (error) {}
+  } catch (error) {
+    next(error)
+  }
 });
+
+// GET LIKES
+
+postRouter.get("/:postId/likes", async (req, res, next) => {
+  try {
+    const post = await PostModel.findById(req.params.postId)
+
+    if (post) {
+      res.status(200).send(post.likes)
+    } else {
+      next(
+        createHttpError(404, `post with id: ${req.params.postId} not found`)
+      );
+    }
+  } catch (error) {
+    next(error)
+  }
+})
 
 export default postRouter;
