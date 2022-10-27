@@ -29,6 +29,7 @@ const usersSchema = new Schema(
     image: { type: String, required: true },
     username: { type: String, required: true },
     experiences: [experienceSchema],
+    likedPosts: [{type: String, required: false}]
   },
   {
     timestamps: true,

@@ -1,6 +1,7 @@
 import express from "express";
 import createHttpError from "http-errors";
 import PostModel from "./model.js";
+import UsersModel from "../users/model.js";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
@@ -170,6 +171,76 @@ postRouter.delete("/:postId", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// LIKE POST
+
+postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.params.userId);
+
+    if (user) {
+      const postIndex = user.likedPosts.findIndex(
+        (postIdNo) => postIdNo === req.params.postId
+      );
+
+      console.log(postIndex);
+
+      if (postIndex !== -1) {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+          req.params.postId,
+          { $inc: { likes: -1 } },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        const updatedUser = await UsersModel.findByIdAndUpdate(
+          req.params.userId,
+          { $pull: { likedPosts: req.params.postId } },
+          { new: true }
+        );
+
+        if (updatedUser && updatedPost) {
+          res.status(200).send({
+            message: "Successfully unliked post",
+            userLikedPosts: updatedUser.likedPosts,
+          });
+        } else {
+          next(createHttpError(404, `Could not find post or user`));
+        }
+      } else {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+          req.params.postId,
+          { $inc: { likes: 1 } },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        const updatedUser = await UsersModel.findByIdAndUpdate(
+          req.params.userId,
+          { $push: { likedPosts: req.params.postId } },
+          { new: true }
+        );
+
+        if (updatedUser && updatedPost) {
+          res.status(200).send({
+            message: "Successfully liked post",
+            userLikedPosts: updatedUser.likedPosts,
+          });
+        } else {
+          next(createHttpError(404, `Could not find post or user`));
+        }
+      }
+    } else {
+      next(
+        createHttpError(404, `user with id: ${req.params.userId} not found`)
+      );
+    }
+  } catch (error) {}
 });
 
 export default postRouter;
