@@ -173,6 +173,8 @@ postRouter.delete("/:postId", async (req, res, next) => {
   }
 });
 
+// ====================== LIKES ======================
+
 // LIKE POST
 
 postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
@@ -180,6 +182,7 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
     const user = await UsersModel.findById(req.params.userId);
 
     if (user) {
+      // Checks if PostId is within user's 'likedPosts' array
       const postIndex = user.likedPosts.findIndex(
         (postIdNo) => postIdNo === req.params.postId
       );
@@ -187,6 +190,7 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
       console.log(postIndex);
 
       if (postIndex !== -1) {
+        // UNLIKING POST
         const updatedPost = await PostModel.findByIdAndUpdate(
           req.params.postId,
           { $inc: { likes: -1 } },
@@ -211,6 +215,7 @@ postRouter.get("/:postId/likeToggle/:userId", async (req, res, next) => {
           next(createHttpError(404, `Could not find post or user`));
         }
       } else {
+        // LIKING POST
         const updatedPost = await PostModel.findByIdAndUpdate(
           req.params.postId,
           { $inc: { likes: 1 } },
