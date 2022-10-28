@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
 import {
   badRequestHandler,
+  conflictHandler,
   genericServerErrorHandler,
   notFoundHandler,
   unauthorizedHandler,
@@ -11,6 +12,7 @@ import {
 import usersRouter from "./api/users/index.js";
 import postRouter from "./api/posts/index.js";
 import skillsRouter from "./api/skills/index.js"
+import connectionsRouter from "./api/connections/index.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -27,10 +29,12 @@ server.use(express.json());
 server.use("/users", usersRouter);
 server.use("/posts", postRouter);
 server.use("/skills", skillsRouter);
+server.use("/connections", connectionsRouter)
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
 server.use(notFoundHandler);
+server.use(conflictHandler);
 server.use(genericServerErrorHandler);
 
 mongoose.connect(process.env.MONGO_DB_CONNECTION_STRING);

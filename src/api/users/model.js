@@ -29,7 +29,10 @@ const usersSchema = new Schema(
     username: { type: String, required: true },
     experiences: [experienceSchema],
     likedPosts: [{ type: String, required: false }],
-    skills: [{ type: Schema.Types.ObjectId, ref: "Skill" }]
+    skills: [{ type: Schema.Types.ObjectId, ref: "Skill" }],
+    connections: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    sentRequests: [{ type: Schema.Types.ObjectId, ref: "Connection" }],
+    receivedRequests: [{ type: Schema.Types.ObjectId, ref: "Connection" }]
   },
   {
     timestamps: true,
