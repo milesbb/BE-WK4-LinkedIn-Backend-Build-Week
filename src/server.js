@@ -13,6 +13,7 @@ import usersRouter from "./api/users/index.js";
 import postRouter from "./api/posts/index.js";
 import skillsRouter from "./api/skills/index.js"
 import connectionsRouter from "./api/connections/index.js";
+import infoRouter from "./api/info/index.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -30,6 +31,7 @@ server.use("/users", usersRouter);
 server.use("/posts", postRouter);
 server.use("/skills", skillsRouter);
 server.use("/connections", connectionsRouter)
+server.use("/info", infoRouter)
 
 server.use(badRequestHandler);
 server.use(unauthorizedHandler);
