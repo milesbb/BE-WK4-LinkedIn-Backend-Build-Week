@@ -9,3 +9,5 @@ Users, Posts, and Experiences support with PDF, CSV, and Cloudinary image upload
 [Deployed frontend](https://react-linkedin.vercel.app/)
 
 [Deployed backend](https://graceful-overalls-jay.cyclic.app)
+
+[API Docs can be found here](https://documenter.getpostman.com/view/23029748/2s8YKAn3uB)
