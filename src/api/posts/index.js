@@ -42,15 +42,9 @@ postRouter.post(
   cloudinaryUploader,
   async (req, res, next) => {
     try {
-      const fileName = req.params.postId + extname(req.file.originalname);
-
-      const cloudinaryURL =
-        "https://res.cloudinary.com/dlskdxln3/image/upload/BEwk4BuildWeek/posts/" +
-        fileName;
-
       const updatedPost = await PostModel.findByIdAndUpdate(
         req.params.postId,
-        { image: cloudinaryURL },
+        { image: req.file.path },
         { new: true, runValidators: true }
       );
 

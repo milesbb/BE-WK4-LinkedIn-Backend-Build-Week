@@ -70,15 +70,11 @@ usersRouter.post(
   cloudinaryUploader,
   async (req, res, next) => {
     try {
-      const fileName = req.params.userId + extname(req.file.originalname);
-
-      const cloudinaryURL =
-        "https://res.cloudinary.com/dlskdxln3/image/upload/BEwk4BuildWeek/users/" +
-        fileName;
+      console.log("Image upload attempt", req.file.path)
 
       const updatedUser = await UsersModel.findByIdAndUpdate(
         req.params.userId,
-        { image: cloudinaryURL },
+        { image: req.file.path },
         { new: true, runValidators: true }
       );
 
@@ -209,12 +205,6 @@ usersRouter.post(
   experienceCloudinaryUploader,
   async (req, res, next) => {
     try {
-      const fileName = req.params.experienceId + extname(req.file.originalname);
-
-      const cloudinaryURL =
-        "https://res.cloudinary.com/dlskdxln3/image/upload/BEwk4BuildWeek/experiences/" +
-        fileName;
-
       const user = await UsersModel.findById(req.params.userId);
 
       if (user) {
@@ -223,7 +213,7 @@ usersRouter.post(
         );
 
         if (selectedExperienceIndex !== -1) {
-          user.experiences[selectedExperienceIndex].image = cloudinaryURL;
+          user.experiences[selectedExperienceIndex].image = req.file.path;
 
           await user.save({ validateBeforeSave: false });
 
