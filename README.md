@@ -1,4 +1,4 @@
-# Node LinkedIn Backend API with MongoDB
+# 💼 Node LinkedIn Backend API with MongoDB
 
 Node based LinkedIn project backend with Mongoose+MongoDB database support.
 
